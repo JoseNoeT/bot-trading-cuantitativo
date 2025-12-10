@@ -1,0 +1,6 @@
+{
+  "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT"],
+  "kline_interval": "1m",
+  "kline_limit": 200,
+  "websocket_reconnect_delay": 3
+}

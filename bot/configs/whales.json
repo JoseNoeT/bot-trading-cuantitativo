@@ -1,0 +1,8 @@
+{
+  "volume_factor_threshold": 3.0,
+  "whale_trade_min_usdt": 200000,
+  "fast_move_threshold_pct": 0.004,
+  "squeeze_min_factor": 1.8,
+  "stop_hunt_wick_ratio": 2.0,
+  "orderbook_wall_threshold": 500000
+}
