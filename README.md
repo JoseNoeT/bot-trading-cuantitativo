@@ -1,86 +1,87 @@
-# 🧠 Bot de Trading Cuantitativo — Proyecto Base
+﻿![CI](https://github.com/JoseNoeT/bot-trading-cuantitativo/actions/workflows/tests.yml/badge.svg)
+# ðŸ§  Bot de Trading Cuantitativo â€” Proyecto Base
 
-Autor: **José Miguel Noé Torres**  
-Versión: 1.0 (Diseño de arquitectura y guía de desarrollo)
+Autor: **JosÃ© Miguel NoÃ© Torres**  
+VersiÃ³n: 1.0 (DiseÃ±o de arquitectura y guÃ­a de desarrollo)
 
 ---
 
-## 📌 Descripción General
+## ðŸ“Œ DescripciÃ³n General
 
-Este repositorio contiene el código y la documentación para construir un **bot de trading cuantitativo** que:
+Este repositorio contiene el cÃ³digo y la documentaciÃ³n para construir un **bot de trading cuantitativo** que:
 
 - Analiza el mercado cripto en tiempo real (Binance).
-- Genera **señales de trading estructuradas** (entrada, SL, TP, confianza).
-- Incluye **gestión de riesgo estricta** (pérdida diaria máxima, tamaño de posición, filtros de volatilidad).
-- Integra un **Radar de Ballenas** (volumen anómalo, trades gigantes, manipulación).
-- Expone la información a través de un **panel web** accesible desde el notebook.
-- Envía **alertas** (Telegram / otros) en fases posteriores.
+- Genera **seÃ±ales de trading estructuradas** (entrada, SL, TP, confianza).
+- Incluye **gestiÃ³n de riesgo estricta** (pÃ©rdida diaria mÃ¡xima, tamaÃ±o de posiciÃ³n, filtros de volatilidad).
+- Integra un **Radar de Ballenas** (volumen anÃ³malo, trades gigantes, manipulaciÃ³n).
+- Expone la informaciÃ³n a travÃ©s de un **panel web** accesible desde el notebook.
+- EnvÃ­a **alertas** (Telegram / otros) en fases posteriores.
 
 ---
 
-## 🧱 Estado Actual
+## ðŸ§± Estado Actual
 
-En esta primera versión el foco está en:
+En esta primera versiÃ³n el foco estÃ¡ en:
 
-- Diseño de arquitectura.
-- Definición de módulos principales.
-- Guía de desarrollo por fases.
-- Documentación funcional y técnica en `/docs`.
+- DiseÃ±o de arquitectura.
+- DefiniciÃ³n de mÃ³dulos principales.
+- GuÃ­a de desarrollo por fases.
+- DocumentaciÃ³n funcional y tÃ©cnica en `/docs`.
 
-El código Python se irá implementando fase por fase siguiendo esta guía.
+El cÃ³digo Python se irÃ¡ implementando fase por fase siguiendo esta guÃ­a.
 
 ---
 
-## 📂 Estructura Inicial del Proyecto
+## ðŸ“‚ Estructura Inicial del Proyecto
 
 Sugerencia de estructura de carpetas para este repositorio:
 
 ```bash
 bot-trading-cuantitativo/
-├── docs/
-│   ├── 01_Idea_Principal_Base.md
-│   ├── 02_Arquitectura_Sistema.md
-│   ├── 03_Modulos_Core.md
-│   ├── 04_Estrategia_Base.md
-│   ├── 05_Gestion_de_Riesgo.md
-│   ├── 06_Radar_de_Ballenas.md
-│   ├── 07_Datos_y_APIs.md
-│   ├── 08_Fases_de_Desarrollo.md
-│   └── README_docs.md (opcional)
-├── bot/
-│   ├── core/
-│   ├── data/
-│   ├── services/
-│   ├── web/
-│   ├── configs/
-│   └── __init__.py
-├── tests/
-├── logs/
-├── .gitignore
-├── README.md   ← (este archivo)
-└── requirements.txt
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ 01_Idea_Principal_Base.md
+â”‚   â”œâ”€â”€ 02_Arquitectura_Sistema.md
+â”‚   â”œâ”€â”€ 03_Modulos_Core.md
+â”‚   â”œâ”€â”€ 04_Estrategia_Base.md
+â”‚   â”œâ”€â”€ 05_Gestion_de_Riesgo.md
+â”‚   â”œâ”€â”€ 06_Radar_de_Ballenas.md
+â”‚   â”œâ”€â”€ 07_Datos_y_APIs.md
+â”‚   â”œâ”€â”€ 08_Fases_de_Desarrollo.md
+â”‚   â””â”€â”€ README_docs.md (opcional)
+â”œâ”€â”€ bot/
+â”‚   â”œâ”€â”€ core/
+â”‚   â”œâ”€â”€ data/
+â”‚   â”œâ”€â”€ services/
+â”‚   â”œâ”€â”€ web/
+â”‚   â”œâ”€â”€ configs/
+â”‚   â””â”€â”€ __init__.py
+â”œâ”€â”€ tests/
+â”œâ”€â”€ logs/
+â”œâ”€â”€ .gitignore
+â”œâ”€â”€ README.md   â† (este archivo)
+â””â”€â”€ requirements.txt
 ```
 
 ---
 
-## 📚 Documentación Oficial del Proyecto
+## ðŸ“š DocumentaciÃ³n Oficial del Proyecto
 
-Toda la guía de desarrollo vive en la carpeta `/docs`.
+Toda la guÃ­a de desarrollo vive en la carpeta `/docs`.
 
-- `01_Idea_Principal_Base.md` → Visión y objetivo del bot.  
-- `02_Arquitectura_Sistema.md` → Arquitectura completa (Core, Data, Web).  
-- `03_Modulos_Core.md` → Definición de `strategy`, `risk_manager`, `signal_engine`, etc.  
-- `04_Estrategia_Base.md` → Estrategia cuantitativa inicial (tendencia + volumen + ATR).  
-- `05_Gestion_de_Riesgo.md` → Reglas de riesgo (SL, TP, pérdidas diarias, filtros).  
-- `06_Radar_de_Ballenas.md` → Diseño del módulo Whale & Volume Detector.  
-- `07_Datos_y_APIs.md` → Uso de REST + WebSocket de Binance.  
-- `08_Fases_de_Desarrollo.md` → Roadmap oficial de desarrollo.
+- `01_Idea_Principal_Base.md` â†’ VisiÃ³n y objetivo del bot.  
+- `02_Arquitectura_Sistema.md` â†’ Arquitectura completa (Core, Data, Web).  
+- `03_Modulos_Core.md` â†’ DefiniciÃ³n de `strategy`, `risk_manager`, `signal_engine`, etc.  
+- `04_Estrategia_Base.md` â†’ Estrategia cuantitativa inicial (tendencia + volumen + ATR).  
+- `05_Gestion_de_Riesgo.md` â†’ Reglas de riesgo (SL, TP, pÃ©rdidas diarias, filtros).  
+- `06_Radar_de_Ballenas.md` â†’ DiseÃ±o del mÃ³dulo Whale & Volume Detector.  
+- `07_Datos_y_APIs.md` â†’ Uso de REST + WebSocket de Binance.  
+- `08_Fases_de_Desarrollo.md` â†’ Roadmap oficial de desarrollo.
 
-> ✅ Con estos 8 documentos, Copilot y el autor tienen una guía completa para construir el bot paso a paso.
+> âœ… Con estos 8 documentos, Copilot y el autor tienen una guÃ­a completa para construir el bot paso a paso.
 
 ---
 
-## 🚀 Guía Rápida para Iniciar el Desarrollo
+## ðŸš€ GuÃ­a RÃ¡pida para Iniciar el Desarrollo
 
 1. **Crear el repositorio en GitHub**  
    Nombre sugerido (puedes cambiarlo):
@@ -99,10 +100,10 @@ Toda la guía de desarrollo vive en la carpeta `/docs`.
    mkdir -p docs bot/core bot/data bot/services bot/web bot/configs tests logs
    ```
 
-4. **Copiar los archivos .md de documentación en `/docs`**
-   - Guardar aquí todos los documentos generados (01 al 08).
+4. **Copiar los archivos .md de documentaciÃ³n en `/docs`**
+   - Guardar aquÃ­ todos los documentos generados (01 al 08).
 
-5. **Crear entorno virtual e instalar dependencias (más adelante)**
+5. **Crear entorno virtual e instalar dependencias (mÃ¡s adelante)**
    ```bash
    python -m venv .venv
    source .venv/Scripts/activate  # Windows
@@ -111,68 +112,68 @@ Toda la guía de desarrollo vive en la carpeta `/docs`.
    pip install -r requirements.txt
    ```
 
-   > Por ahora, `requirements.txt` puede empezar vacío o con dependencias básicas como:
-   > `python-binance`, `websockets`, `fastapi`/`flask`, `uvicorn`, etc. (se definirán en la fase de implementación).
+   > Por ahora, `requirements.txt` puede empezar vacÃ­o o con dependencias bÃ¡sicas como:
+   > `python-binance`, `websockets`, `fastapi`/`flask`, `uvicorn`, etc. (se definirÃ¡n en la fase de implementaciÃ³n).
 
 ---
 
-## 🧠 Filosofía del Proyecto
+## ðŸ§  FilosofÃ­a del Proyecto
 
-- **Primero la lógica, luego el código.**
+- **Primero la lÃ³gica, luego el cÃ³digo.**
 - Todo debe ser:
   - Medible  
   - Backtesteable  
   - Reproducible  
   - Controlado en riesgo  
 
-No se busca crear un bot de “señales mágicas”, sino un sistema cuantitativo serio.
+No se busca crear un bot de â€œseÃ±ales mÃ¡gicasâ€, sino un sistema cuantitativo serio.
 
 ---
 
-## 🗺️ Roadmap Resumido
+## ðŸ—ºï¸ Roadmap Resumido
 
-Las fases detalladas están en `docs/08_Fases_de_Desarrollo.md`, pero el resumen es:
+Las fases detalladas estÃ¡n en `docs/08_Fases_de_Desarrollo.md`, pero el resumen es:
 
 1. Arquitectura y documentos  
-2. Módulos Core  
+2. MÃ³dulos Core  
 3. Data Layer (APIs)  
 4. Estrategia Base  
-5. Gestión de Riesgo  
+5. GestiÃ³n de Riesgo  
 6. Radar de Ballenas  
 7. Backtesting  
 8. Panel Web  
 9. Alertas  
-10. Producción
+10. ProducciÃ³n
 
 ---
 
-## 🤝 Colaboración con Copilot
+## ðŸ¤ ColaboraciÃ³n con Copilot
 
 - Usar los documentos en `/docs` como **fuente de verdad**.  
-- Pedir a Copilot implementar cada módulo respetando:
+- Pedir a Copilot implementar cada mÃ³dulo respetando:
   - nombres de archivos  
   - funciones descritas  
   - responsabilidades definidas  
 
 Ejemplo de prompt para Copilot:
 
-> “Basado en `docs/03_Modulos_Core.md`, implementa el archivo `bot/core/indicators.py` con funciones para EMA, ATR, RSI y MACD, usando nombres de variables claros y tipos de datos limpios.”
+> â€œBasado en `docs/03_Modulos_Core.md`, implementa el archivo `bot/core/indicators.py` con funciones para EMA, ATR, RSI y MACD, usando nombres de variables claros y tipos de datos limpios.â€
 
 ---
 
-## 🔒 Notas sobre Seguridad
+## ðŸ”’ Notas sobre Seguridad
 
-- Nunca exponer claves de API de Binance en el código.  
+- Nunca exponer claves de API de Binance en el cÃ³digo.  
 - Usar variables de entorno o un archivo `.env` (no subirlo a Git).  
-- Probar primero en modo paper trading o con montos pequeños.
+- Probar primero en modo paper trading o con montos pequeÃ±os.
 
 ---
 
-## 📎 Próximos Pasos
+## ðŸ“Ž PrÃ³ximos Pasos
 
 1. Crear el repositorio en GitHub.  
 2. Subir este `README.md`.  
 3. Crear la carpeta `/docs` y agregar los 8 documentos.  
 4. Definir `requirements.txt`.  
-5. Empezar con la implementación de `bot/core/indicators.py`.
+5. Empezar con la implementaciÃ³n de `bot/core/indicators.py`.
 
