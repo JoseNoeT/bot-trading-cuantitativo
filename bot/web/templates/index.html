@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bot Trading Dashboard</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 16px; background: #0f172a; color: #e6eef8; }
+    h1 { color: #7dd3fc }
+    #log { margin-top: 12px; max-width: 900px; }
+    .msg { padding: 8px; border-radius: 6px; margin-bottom: 8px; background: rgba(255,255,255,0.03); }
+    .whale { border-left: 4px solid #f472b6; }
+    .meta { font-size: 12px; color: #9aaed0 }
+  </style>
+</head>
+<body>
+  <h1>Bot Trading Dashboard</h1>
+  <p>WebSocket signals: <code>/ws/signals</code></p>
+  <div id="status">Connecting...</div>
+  <div id="log"></div>
+
+  <script>
+    const log = document.getElementById('log');
+    const status = document.getElementById('status');
+    const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/signals');
+
+    function addMessage(obj){
+      const d = new Date(obj.ts*1000);
+      const el = document.createElement('div');
+      el.className = 'msg' + (obj.whale ? ' whale' : '');
+      el.innerHTML = `<div><strong>${obj.symbol}</strong> — $${obj.price.toLocaleString()} @ vol ${obj.volume}</div>` +
+                     `<div class="meta">${d.toLocaleString()} • note: ${obj.note}</div>`;
+      log.insertBefore(el, log.firstChild);
+      // keep only last 50
+      while(log.children.length>50) log.removeChild(log.lastChild);
+    }
+
+    ws.addEventListener('open', ()=>{ status.innerText = 'Connected'; });
+    ws.addEventListener('close', ()=>{ status.innerText = 'Disconnected'; });
+    ws.addEventListener('message', (ev)=>{
+      try{ const obj = JSON.parse(ev.data); addMessage(obj); } catch(e){ console.warn('invalid', e); }
+    });
+
+    // send a ping every 20s to keep connection alive
+    setInterval(()=>{ if(ws.readyState===1) ws.send('ping'); }, 20000);
+  </script>
+</body>
+</html>
