@@ -1,179 +1,314 @@
-﻿![CI](https://github.com/JoseNoeT/bot-trading-cuantitativo/actions/workflows/tests.yml/badge.svg)
-# ðŸ§  Bot de Trading Cuantitativo â€” Proyecto Base
+# Bot de Trading Cuantitativo
 
-Autor: **JosÃ© Miguel NoÃ© Torres**  
-VersiÃ³n: 1.0 (DiseÃ±o de arquitectura y guÃ­a de desarrollo)
+Sistema experimental desarrollado en Python para analizar datos de mercado, generar señales estructuradas y aplicar reglas de gestión de riesgo sobre estrategias de trading cuantitativo.
 
----
-
-## ðŸ“Œ DescripciÃ³n General
-
-Este repositorio contiene el cÃ³digo y la documentaciÃ³n para construir un **bot de trading cuantitativo** que:
-
-- Analiza el mercado cripto en tiempo real (Binance).
-- Genera **seÃ±ales de trading estructuradas** (entrada, SL, TP, confianza).
-- Incluye **gestiÃ³n de riesgo estricta** (pÃ©rdida diaria mÃ¡xima, tamaÃ±o de posiciÃ³n, filtros de volatilidad).
-- Integra un **Radar de Ballenas** (volumen anÃ³malo, trades gigantes, manipulaciÃ³n).
-- Expone la informaciÃ³n a travÃ©s de un **panel web** accesible desde el notebook.
-- EnvÃ­a **alertas** (Telegram / otros) en fases posteriores.
+> **Estado:** núcleo cuantitativo implementado y probado. Las integraciones en tiempo real, API web y alertas externas continúan en desarrollo.
 
 ---
 
-## ðŸ§± Estado Actual
+## 1. Descripción general
 
-En esta primera versiÃ³n el foco estÃ¡ en:
+El proyecto busca construir una arquitectura modular para analizar mercados de criptomonedas y separar claramente la lógica de indicadores, estrategia, riesgo, detección de actividad anómala e integraciones externas.
 
-- DiseÃ±o de arquitectura.
-- DefiniciÃ³n de mÃ³dulos principales.
-- GuÃ­a de desarrollo por fases.
-- DocumentaciÃ³n funcional y tÃ©cnica en `/docs`.
-
-El cÃ³digo Python se irÃ¡ implementando fase por fase siguiendo esta guÃ­a.
+La versión actual implementa el núcleo de análisis y dispone de pruebas automatizadas. Los conectores con Binance y las capas de exposición web todavía se encuentran como estructura base y no deben considerarse funcionalidades terminadas.
 
 ---
 
-## ðŸ“‚ Estructura Inicial del Proyecto
+## 2. Objetivos del sistema
 
-Sugerencia de estructura de carpetas para este repositorio:
+| Objetivo | Estado |
+|----------|--------|
+| Indicadores técnicos | Implementado |
+| Detección de tendencia | Implementado |
+| Validación de volumen | Implementado |
+| Generación de pre-señales LONG/SHORT | Implementado |
+| Gestión de riesgo | Implementado |
+| Construcción de SL/TP | Implementado |
+| Tamaño de posición | Implementado |
+| Detección de actividad anómala | Implementado |
+| Ensamblado de señal final | Implementado |
+| Pruebas automatizadas | Implementado |
+| Integración REST con Binance | Pendiente |
+| Streams WebSocket | Pendiente |
+| API web | Pendiente |
+| Alertas externas | Pendiente |
+
+---
+
+## 3. Tecnologías
+
+| Componente | Tecnología |
+|------------|------------|
+| Lenguaje | Python |
+| Exchange objetivo | Binance |
+| Comunicación planificada | REST / WebSocket |
+| API web planificada | FastAPI |
+| Pruebas | pytest |
+| Integración continua | GitHub Actions |
+| Configuración | JSON |
+
+Dependencias declaradas actualmente:
+
+- python-binance
+- websockets
+- fastapi
+- uvicorn
+
+---
+
+## 4. Arquitectura
+
+```text
+bot-trading-cuantitativo/
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+├── bot/
+│   ├── configs/
+│   │   ├── data.json
+│   │   ├── risk.json
+│   │   └── whales.json
+│   ├── core/
+│   │   ├── indicators.py
+│   │   ├── risk_manager.py
+│   │   ├── signal_engine.py
+│   │   ├── strategy.py
+│   │   ├── utils.py
+│   │   └── whale_detector.py
+│   ├── data/
+│   │   ├── binance_api.py
+│   │   └── websocket_stream.py
+│   ├── services/
+│   │   ├── alert_telegram.py
+│   │   └── logger.py
+│   ├── tests/
+│   └── web/
+│       └── api.py
+├── docs/
+├── main.py
+├── requirements.txt
+└── README.md
+```
+
+La arquitectura separa el núcleo cuantitativo de las futuras integraciones externas. Esto permite probar la lógica de estrategia y riesgo sin depender de conexiones en tiempo real.
+
+---
+
+## 5. Módulos implementados
+
+### Indicadores técnicos
+
+`bot/core/indicators.py` implementa funciones para:
+
+- SMA;
+- EMA;
+- ATR;
+- RSI;
+- MACD;
+- volatilidad.
+
+Las funciones realizan validación de entradas y no dependen de librerías externas de análisis técnico.
+
+### Estrategia
+
+`bot/core/strategy.py` contiene la lógica para:
+
+- detectar tendencia mediante EMA20 y EMA50;
+- validar volumen;
+- calcular ATR;
+- generar pre-señales LONG o SHORT;
+- descartar escenarios sin condiciones suficientes.
+
+### Gestión de riesgo
+
+`bot/core/risk_manager.py` implementa:
+
+- cálculo de tamaño de posición;
+- validación de Stop Loss y Take Profit;
+- ratio riesgo/beneficio;
+- control de pérdida diaria;
+- límite de operaciones;
+- filtro de volatilidad;
+- construcción de una señal validada por riesgo.
+
+### Motor de señales
+
+`bot/core/signal_engine.py` combina:
+
+1. estrategia;
+2. análisis de actividad anómala;
+3. filtros de riesgo;
+4. cálculo de SL/TP;
+5. tamaño de posición;
+6. puntuación heurística de confianza.
+
+El resultado es una señal estructurada o `None` cuando las condiciones no superan los filtros.
+
+### Detección de actividad anómala
+
+`bot/core/whale_detector.py` contiene detectores experimentales basados en velas para:
+
+- volumen extremo;
+- movimientos rápidos;
+- cuerpos de vela anómalos;
+- mechas largas;
+- compresión y expansión;
+- clasificación de severidad.
+
+Estos detectores son heurísticos y no identifican por sí solos operaciones reales de grandes participantes del mercado.
+
+---
+
+## 6. Componentes pendientes
+
+Los siguientes archivos existen como estructura inicial, pero todavía no representan integraciones completas:
+
+| Componente | Archivo | Estado |
+|------------|---------|--------|
+| Binance REST | `bot/data/binance_api.py` | Placeholder |
+| Binance WebSocket | `bot/data/websocket_stream.py` | Placeholder |
+| API web | `bot/web/api.py` | Placeholder |
+| Alertas Telegram | `bot/services/alert_telegram.py` | Base pendiente de integración |
+
+Por esta razón, la versión actual debe entenderse como un **motor cuantitativo en desarrollo**, no como un bot autónomo operando en producción.
+
+---
+
+## 7. Pruebas y calidad
+
+El repositorio incluye pruebas automatizadas para los principales componentes del núcleo:
+
+- indicadores;
+- estrategia;
+- gestión de riesgo;
+- motor de señales;
+- detector de actividad anómala.
+
+La carpeta de pruebas se encuentra en:
+
+```text
+bot/tests/
+```
+
+El workflow `.github/workflows/tests.yml` ejecuta la suite con `pytest` mediante GitHub Actions para Python 3.10 y 3.11.
+
+Ejecución local:
 
 ```bash
-bot-trading-cuantitativo/
-â”œâ”€â”€ docs/
-â”‚   â”œâ”€â”€ 01_Idea_Principal_Base.md
-â”‚   â”œâ”€â”€ 02_Arquitectura_Sistema.md
-â”‚   â”œâ”€â”€ 03_Modulos_Core.md
-â”‚   â”œâ”€â”€ 04_Estrategia_Base.md
-â”‚   â”œâ”€â”€ 05_Gestion_de_Riesgo.md
-â”‚   â”œâ”€â”€ 06_Radar_de_Ballenas.md
-â”‚   â”œâ”€â”€ 07_Datos_y_APIs.md
-â”‚   â”œâ”€â”€ 08_Fases_de_Desarrollo.md
-â”‚   â””â”€â”€ README_docs.md (opcional)
-â”œâ”€â”€ bot/
-â”‚   â”œâ”€â”€ core/
-â”‚   â”œâ”€â”€ data/
-â”‚   â”œâ”€â”€ services/
-â”‚   â”œâ”€â”€ web/
-â”‚   â”œâ”€â”€ configs/
-â”‚   â””â”€â”€ __init__.py
-â”œâ”€â”€ tests/
-â”œâ”€â”€ logs/
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ README.md   â† (este archivo)
-â””â”€â”€ requirements.txt
+pytest -q
 ```
 
 ---
 
-## ðŸ“š DocumentaciÃ³n Oficial del Proyecto
+## 8. Instalación local
 
-Toda la guÃ­a de desarrollo vive en la carpeta `/docs`.
+Clonar el repositorio:
 
-- `01_Idea_Principal_Base.md` â†’ VisiÃ³n y objetivo del bot.  
-- `02_Arquitectura_Sistema.md` â†’ Arquitectura completa (Core, Data, Web).  
-- `03_Modulos_Core.md` â†’ DefiniciÃ³n de `strategy`, `risk_manager`, `signal_engine`, etc.  
-- `04_Estrategia_Base.md` â†’ Estrategia cuantitativa inicial (tendencia + volumen + ATR).  
-- `05_Gestion_de_Riesgo.md` â†’ Reglas de riesgo (SL, TP, pÃ©rdidas diarias, filtros).  
-- `06_Radar_de_Ballenas.md` â†’ DiseÃ±o del mÃ³dulo Whale & Volume Detector.  
-- `07_Datos_y_APIs.md` â†’ Uso de REST + WebSocket de Binance.  
-- `08_Fases_de_Desarrollo.md` â†’ Roadmap oficial de desarrollo.
+```bash
+git clone https://github.com/JoseNoeT/bot-trading-cuantitativo.git
+cd bot-trading-cuantitativo
+```
 
-> âœ… Con estos 8 documentos, Copilot y el autor tienen una guÃ­a completa para construir el bot paso a paso.
+Crear un entorno virtual:
 
----
+```bash
+python -m venv .venv
+```
 
-## ðŸš€ GuÃ­a RÃ¡pida para Iniciar el Desarrollo
+Activar en Windows:
 
-1. **Crear el repositorio en GitHub**  
-   Nombre sugerido (puedes cambiarlo):
-   - `bot-trading-cuantitativo`
-   - `quant-crypto-bot`
-   - `binance-quant-bot`
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-2. **Clonar el repositorio en el notebook**
-   ```bash
-   git clone <URL_DEL_REPO>
-   cd <NOMBRE_DEL_REPO>
-   ```
+Activar en Linux/macOS:
 
-3. **Crear la estructura de carpetas inicial**
-   ```bash
-   mkdir -p docs bot/core bot/data bot/services bot/web bot/configs tests logs
-   ```
+```bash
+source .venv/bin/activate
+```
 
-4. **Copiar los archivos .md de documentaciÃ³n en `/docs`**
-   - Guardar aquÃ­ todos los documentos generados (01 al 08).
+Instalar dependencias:
 
-5. **Crear entorno virtual e instalar dependencias (mÃ¡s adelante)**
-   ```bash
-   python -m venv .venv
-   source .venv/Scripts/activate  # Windows
-   # o source .venv/bin/activate  # Linux/Mac
+```bash
+pip install -r requirements.txt
+pip install pytest
+```
 
-   pip install -r requirements.txt
-   ```
+Ejecutar las pruebas:
 
-   > Por ahora, `requirements.txt` puede empezar vacÃ­o o con dependencias bÃ¡sicas como:
-   > `python-binance`, `websockets`, `fastapi`/`flask`, `uvicorn`, etc. (se definirÃ¡n en la fase de implementaciÃ³n).
+```bash
+pytest -q
+```
 
 ---
 
-## ðŸ§  FilosofÃ­a del Proyecto
+## 9. Documentación técnica
 
-- **Primero la lÃ³gica, luego el cÃ³digo.**
-- Todo debe ser:
-  - Medible  
-  - Backtesteable  
-  - Reproducible  
-  - Controlado en riesgo  
+La carpeta `docs/` contiene la documentación de diseño original:
 
-No se busca crear un bot de â€œseÃ±ales mÃ¡gicasâ€, sino un sistema cuantitativo serio.
+1. `01_Idea_Principal_Base.md`
+2. `02_Arquitectura_Sistema.md`
+3. `03_Modulos_Core.md`
+4. `04_Estrategia_Base.md`
+5. `05_Gestion_de_Riesgo.md`
+6. `06_Radar_de_Ballenas.md`
+7. `07_Datos_y_APIs.md`
+8. `08_Fases_de_Desarrollo.md`
 
----
-
-## ðŸ—ºï¸ Roadmap Resumido
-
-Las fases detalladas estÃ¡n en `docs/08_Fases_de_Desarrollo.md`, pero el resumen es:
-
-1. Arquitectura y documentos  
-2. MÃ³dulos Core  
-3. Data Layer (APIs)  
-4. Estrategia Base  
-5. GestiÃ³n de Riesgo  
-6. Radar de Ballenas  
-7. Backtesting  
-8. Panel Web  
-9. Alertas  
-10. ProducciÃ³n
+Parte de esta documentación describe la arquitectura objetivo y, por tanto, puede incluir componentes todavía no implementados.
 
 ---
 
-## ðŸ¤ ColaboraciÃ³n con Copilot
+## 10. Seguridad
 
-- Usar los documentos en `/docs` como **fuente de verdad**.  
-- Pedir a Copilot implementar cada mÃ³dulo respetando:
-  - nombres de archivos  
-  - funciones descritas  
-  - responsabilidades definidas  
-
-Ejemplo de prompt para Copilot:
-
-> â€œBasado en `docs/03_Modulos_Core.md`, implementa el archivo `bot/core/indicators.py` con funciones para EMA, ATR, RSI y MACD, usando nombres de variables claros y tipos de datos limpios.â€
+- No almacenar claves de Binance directamente en el código.
+- Utilizar variables de entorno para futuras credenciales.
+- Mantener separadas las credenciales de prueba y producción.
+- No utilizar el proyecto con capital real sin validación, backtesting y controles adicionales.
 
 ---
 
-## ðŸ”’ Notas sobre Seguridad
+## 11. Estado actual
 
-- Nunca exponer claves de API de Binance en el cÃ³digo.  
-- Usar variables de entorno o un archivo `.env` (no subirlo a Git).  
-- Probar primero en modo paper trading o con montos pequeÃ±os.
+### Implementado
+
+- Núcleo de indicadores.
+- Estrategia basada en tendencia, volumen y ATR.
+- Gestión de riesgo.
+- Motor de señales.
+- Detección heurística de actividad anómala.
+- Pruebas automatizadas.
+- CI con GitHub Actions.
+
+### Pendiente
+
+- Consumo real de Binance REST.
+- Streams WebSocket.
+- Persistencia de datos.
+- Backtesting completo.
+- API web funcional.
+- Panel de visualización.
+- Sistema de alertas.
+- Validación integral con datos reales.
+- Preparación para despliegue.
+
+### Deuda técnica detectada
+
+- Existen archivos `__pycache__` y `.pyc` versionados que deben retirarse del repositorio.
+- Algunos módulos conservan funciones `placeholder()` heredadas de fases anteriores.
+- La documentación de `docs/` requiere una revisión de codificación UTF-8 y sincronización con el estado actual.
+- El punto de entrada `main.py` todavía corresponde a un scaffold inicial.
 
 ---
 
-## ðŸ“Ž PrÃ³ximos Pasos
+## 12. Alcance
 
-1. Crear el repositorio en GitHub.  
-2. Subir este `README.md`.  
-3. Crear la carpeta `/docs` y agregar los 8 documentos.  
-4. Definir `requirements.txt`.  
-5. Empezar con la implementaciÃ³n de `bot/core/indicators.py`.
+Este repositorio es un proyecto de aprendizaje y experimentación técnica. No constituye asesoría financiera ni un sistema de trading listo para producción.
 
+El objetivo técnico es desarrollar y validar de forma progresiva una arquitectura modular para análisis cuantitativo, gestión de riesgo e integración con datos de mercado.
+
+---
+
+## Autor
+
+**José Noé Torres**
