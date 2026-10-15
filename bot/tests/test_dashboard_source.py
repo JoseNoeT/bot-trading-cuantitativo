@@ -19,3 +19,11 @@ def test_binance_public_stream_url():
 def test_status_exposes_source():
     assert api.status()["data_source"] == api.DATA_SOURCE
     assert api.status()["real_orders_enabled"] is False
+
+
+def test_dashboard_template_renders():
+    from starlette.requests import Request
+    request = Request({"type": "http", "method": "GET", "path": "/dashboard", "headers": [], "query_string": b"", "scheme": "http", "server": ("127.0.0.1", 8000), "client": ("127.0.0.1", 1234), "root_path": "", "http_version": "1.1", "app": api.app})
+    response = api.dashboard(request)
+    assert response.status_code == 200
+    assert response.template.name == "index.html"
