@@ -70,7 +70,7 @@
     connect();
     async function updateIntelligence() {
       const results = [];
-      for (const symbol of ["BTCUSDT", "ETHUSDT"]) {
+      for (const symbol of ["BTCUSDT", "ETHUSDT", "WLDUSDT"]) {
         try {
           const response = await fetch("/intelligence/" + symbol, {cache: "no-store"});
           if (!response.ok) {
