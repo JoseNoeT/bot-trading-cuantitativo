@@ -50,3 +50,16 @@ def test_dashboard_has_distinct_asset_cards_and_collapsible_feed():
     assert 'function refreshOne(symbol)' in html
     assert html.count("<script>") == 1
     assert html.rstrip().endswith("</html>")
+
+
+def test_order_review_panel_uses_separate_script_and_manual_data():
+    from pathlib import Path
+    html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
+    javascript = Path("bot/web/static/order_review.js").read_text(encoding="utf-8")
+    assert 'id="order-review-form"' in html
+    assert 'id="order-review-result"' in html
+    assert 'src="/static/order_review.js"' in html
+    assert 'action="/orders/review"' not in html
+    assert 'fetch("/orders/review"' in javascript
+    assert 'method: "POST"' in javascript
+    assert "no coloca ni cancela órdenes" in html
