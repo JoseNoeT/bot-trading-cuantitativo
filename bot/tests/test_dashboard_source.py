@@ -58,3 +58,13 @@ def test_order_review_panel_uses_separate_script_and_manual_data():
     assert 'fetch("/orders/review"' in javascript
     assert 'method: "POST"' in javascript
     assert "No coloca, modifica ni cancela órdenes" in html
+
+
+def test_fixed_viewport_dashboard_has_no_page_scroll():
+    from pathlib import Path
+    css = Path("bot/web/static/command_center.css").read_text(encoding="utf-8")
+    assert "height:100dvh" in css
+    assert "overflow:hidden" in css
+    assert "#overview.view.active" in css
+    assert "#orders.view.active" in css
+    assert "#flow.view.active" in css
