@@ -12,6 +12,8 @@ Notas:
 import asyncio
 import json
 import logging
+import math
+import time
 from typing import Iterable
 
 import websockets
@@ -56,13 +58,16 @@ async def forward_trades(mgr, symbols=None, stream_type: str = "spot"):
                             price = float(data.get("p", 0))
                             qty = float(data.get("q", 0))
                             ts = int(data.get("T") / 1000) if data.get("T") else None
+                            if not (math.isfinite(price) and math.isfinite(qty) and price > 0 and qty > 0):
+                                continue
                             message = {
-                                "ts": ts or int(asyncio.get_event_loop().time()),
+                                "ts": ts or int(time.time()),
                                 "symbol": symbol,
                                 "price": price,
                                 "volume": qty,
                                 "whale": False,
-                                "raw": data,
+                                "source": "binance_public_spot" ,
+                                "note": "PUBLIC LIVE TRADE - NOT A SIGNAL",
                             }
                             # fire-and-forget broadcast
                             try:

@@ -12,6 +12,14 @@ from typing import Any
 import asyncio
 import random
 import time
+import os
+import logging
+from bot.data.websocket_stream import forward_trades
+
+logger = logging.getLogger(__name__)
+DATA_SOURCE = os.getenv('BOTTRADING_DATA_SOURCE', 'simulation').strip().lower()
+if DATA_SOURCE not in {'simulation', 'binance'}:
+    raise ValueError('BOTTRADING_DATA_SOURCE must be simulation or binance')
 
 app = FastAPI(title="Bot Trading API", version="0.1")
 
@@ -21,18 +29,18 @@ templates = Jinja2Templates(directory="bot/web/templates")
 
 @app.get("/", summary="Root")
 def root() -> dict[str, Any]:
-    return {"message": "Bot Trading API", "status": "ok"}
+    return {"message": "Bot Trading API", "status": "ok", "data_source": DATA_SOURCE, "real_orders_enabled": False}
 
 
 @app.get("/status", summary="Estado del servicio")
 def status() -> dict[str, Any]:
-    return {"status": "ok"}
+    return {"status": "ok", "data_source": DATA_SOURCE, "real_orders_enabled": False}
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request):
     """Renderiza un dashboard HTML que se conecta al WebSocket `/ws/signals`."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 class ConnectionManager:
@@ -75,7 +83,8 @@ async def scanner_loop():
             "price": round(random.uniform(10_000, 70_000), 2),
             "volume": round(random.uniform(1, 2000), 2),
             "whale": random.random() < 0.05,
-            "note": "simulated"
+            "note": "SIMULATED - NOT LIVE",
+            "source": "simulation"
         }
         await mgr.broadcast(sig)
 
@@ -84,7 +93,10 @@ async def scanner_loop():
 async def start_scanner():
     global _scanner_task
     if _scanner_task is None:
-        _scanner_task = asyncio.create_task(scanner_loop())
+        if DATA_SOURCE == "binance":
+            _scanner_task = asyncio.create_task(forward_trades(mgr, ["btcusdt", "ethusdt"]))
+        else:
+            _scanner_task = asyncio.create_task(scanner_loop())
 
 
 @app.on_event("shutdown")
@@ -131,3 +143,8 @@ def settings() -> dict[str, Any]:
 def logs() -> dict[str, Any]:
     return {"logs": []}
 
+
+
+@app.get("/source", summary="Fuente de datos y seguridad")
+def source() -> dict[str, Any]:
+    return {"data_source": DATA_SOURCE, "real_orders_enabled": False, "authenticated_binance": False}

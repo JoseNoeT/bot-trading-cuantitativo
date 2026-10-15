@@ -2,3 +2,4 @@ python-binance
 websockets
 fastapi
 uvicorn
+jinja2
