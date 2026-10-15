@@ -40,7 +40,7 @@ def status() -> dict[str, Any]:
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request):
     """Renderiza un dashboard HTML que se conecta al WebSocket `/ws/signals`."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 class ConnectionManager:
