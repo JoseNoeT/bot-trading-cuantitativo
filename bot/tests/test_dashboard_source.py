@@ -27,3 +27,14 @@ def test_dashboard_template_renders():
     response = api.dashboard(request)
     assert response.status_code == 200
     assert response.template.name == "index.html"
+
+
+def test_dashboard_html_has_single_complete_script():
+    from pathlib import Path
+    html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
+    assert html.count("<script>") == 1
+    assert html.count("</script>") == 1
+    assert html.count("</html>") == 1
+    assert html.rstrip().endswith("</html>")
+    assert "function addMessage(event)" in html
+    assert "log.prepend(line)" in html
