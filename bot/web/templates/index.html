@@ -24,7 +24,7 @@ button{cursor:pointer;background:#243c59;border:1px solid #476080;border-radius:
 button:hover{background:#365274}button:focus-visible{outline:2px solid #93c5fd}
 #feed{max-height:350px;overflow:auto;display:grid;gap:6px}
 .trade{display:grid;grid-template-columns:110px 1fr 1fr 100px;gap:10px;padding:10px 12px;background:#101a2c;border-radius:8px;font-size:13px;align-items:center}
-.foot{font-size:12px;color:#a5b6cf;line-height:1.6;margin-top:14px}
+.order-form{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-top:14px}.order-form label{display:grid;gap:6px;font-size:12px;color:#a5b6cf}.order-form input,.order-form select{background:#101a2c;border:1px solid #476080;color:#e8effa;border-radius:8px;padding:10px;min-width:100px;max-width:150px}.order-result{padding:14px;background:#101a2c;border-radius:10px;margin-top:14px;line-height:1.7;color:#dae6f8}.foot{font-size:12px;color:#a5b6cf;line-height:1.6;margin-top:14px}
 @media(max-width:960px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.grid{grid-template-columns:1fr}.trade{grid-template-columns:1fr 1fr}.container{padding:18px 12px}}
 </style>
 </head>
@@ -43,6 +43,18 @@ button:hover{background:#365274}button:focus-visible{outline:2px solid #93c5fd}
 <article class="card wld" data-symbol="WLDUSDT"><div class="top"><div class="coin">Worldcoin <div class="muted">WLD / USDT · Prioritario</div></div><span class="status" data-field="status">Cargando</span></div><div class="price" data-field="price">—</div><div class="muted" data-field="source">Esperando datos verificados</div><div class="metrics"><div class="metric"><div class="muted">Tendencia</div><div class="value" data-field="trend">—</div></div><div class="metric"><div class="muted">RSI (14)</div><div class="value" data-field="rsi">—</div></div><div class="metric"><div class="muted">EMA20 / EMA50</div><div class="value" data-field="ema">—</div></div><div class="metric"><div class="muted">ATR (14)</div><div class="value" data-field="atr">—</div></div></div><div class="reason" data-field="reason">Análisis pendiente. NO OPERAR.</div></article>
 </div>
 <p class="foot">Los indicadores se calculan con velas cerradas de 1 minuto. WAIT o SETUP_DETECTED no son autorizaciones. Sin riesgo validado: NO OPERAR. Los precios de transacciones pueden diferir del último cierre analizado.</p>
+</section>
+<section class="panel" id="orders-panel">
+<div class="section-head"><div><h2>Mis órdenes en seguimiento</h2><p>Revisión manual de una orden Spot. No representa información de tu cuenta en vivo.</p></div><span class="tag">Solo lectura</span></div>
+<form id="order-review-form" class="order-form">
+<label>Activo<select name="symbol"><option value="WLDUSDT">WLD / USDT</option><option value="BTCUSDT">BTC / USDT</option><option value="ETHUSDT">ETH / USDT</option></select></label>
+<label>Operación<select name="side"><option value="BUY">Compra</option><option value="SELL">Venta</option></select></label>
+<label>Cantidad<input name="quantity" type="number" min="0.00000001" step="any" value="17.2" required></label>
+<label>Precio límite (USDT)<input name="limit_price" type="number" min="0.00000001" step="any" value="0.4600" required></label>
+<button type="submit">Revisar orden</button>
+</form>
+<div id="order-review-result" class="order-result" role="status" aria-live="polite">Ejemplo precargado de WLD. La orden real NO está verificada. Pulsa «Revisar orden» para consultar el mercado.</div>
+<p class="foot">Este formulario no coloca ni cancela órdenes. Los importes son manuales y no se guardan; antes de decidir verifica el estado actual en Binance.</p>
 </section>
 <section class="panel">
 <div class="section-head"><div><h2>Transacciones de mercado</h2><p>Últimos 30 eventos públicos. No son señales.</p></div><button id="toggle" type="button" aria-expanded="false">Mostrar transacciones</button></div>
@@ -101,4 +113,5 @@ function connect(){
 }
 connect();
 </script>
+<script src="/static/order_review.js" defer></script>
 </body></html>
