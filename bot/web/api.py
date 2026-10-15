@@ -17,6 +17,7 @@ import logging
 import requests
 from bot.data.websocket_stream import forward_trades
 from bot.services.market_intelligence import analyze
+from bot.services.multitimeframe import analyze_multitimeframe
 
 logger = logging.getLogger(__name__)
 DATA_SOURCE = os.getenv('BOTTRADING_DATA_SOURCE', 'simulation').strip().lower()
@@ -160,4 +161,15 @@ def intelligence(symbol: str) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except requests.exceptions.RequestException as exc:
         logger.warning("Binance public REST unavailable: %s", exc)
+        raise HTTPException(status_code=503, detail="Binance público no disponible") from exc
+
+
+@app.get("/intelligence/{symbol}/multi", summary="Contexto multitemporal de solo lectura")
+def intelligence_multi(symbol: str) -> dict[str, Any]:
+    try:
+        return analyze_multitimeframe(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Binance multitimeframe unavailable: %s", exc)
         raise HTTPException(status_code=503, detail="Binance público no disponible") from exc
