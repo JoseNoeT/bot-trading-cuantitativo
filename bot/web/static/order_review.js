@@ -36,5 +36,8 @@
       result.textContent = "Sin respuesta del servicio. Orden sin verificar. NO OPERAR.";
     }
   }
+  const button = document.getElementById("review-order-button");
+  if (button) button.addEventListener("click", review);
   form.addEventListener("submit", review);
+  result.textContent = "Evaluador listo. Pulsa «Revisar orden» para consultar datos públicos de Binance. La orden no está verificada.";
 })();
