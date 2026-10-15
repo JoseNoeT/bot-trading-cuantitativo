@@ -5,7 +5,7 @@ con: python -m uvicorn bot.web.api:app --host 0.0.0.0 --port 8000
 
 Los endpoints son placeholders diseñados para permitir pruebas locales.
 """
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from typing import Any
@@ -14,7 +14,10 @@ import random
 import time
 import os
 import logging
+import requests
 from bot.data.websocket_stream import forward_trades
+from bot.services.market_intelligence import analyze
+from bot.services.multitimeframe import analyze_multitimeframe
 
 logger = logging.getLogger(__name__)
 DATA_SOURCE = os.getenv('BOTTRADING_DATA_SOURCE', 'simulation').strip().lower()
@@ -94,7 +97,7 @@ async def start_scanner():
     global _scanner_task
     if _scanner_task is None:
         if DATA_SOURCE == "binance":
-            _scanner_task = asyncio.create_task(forward_trades(mgr, ["btcusdt", "ethusdt"]))
+            _scanner_task = asyncio.create_task(forward_trades(mgr, ["btcusdt", "ethusdt", "wldusdt"]))
         else:
             _scanner_task = asyncio.create_task(scanner_loop())
 
@@ -148,3 +151,25 @@ def logs() -> dict[str, Any]:
 @app.get("/source", summary="Fuente de datos y seguridad")
 def source() -> dict[str, Any]:
     return {"data_source": DATA_SOURCE, "real_orders_enabled": False, "authenticated_binance": False}
+
+
+@app.get("/intelligence/{symbol}", summary="Análisis cuantitativo sin órdenes")
+def intelligence(symbol: str) -> dict[str, Any]:
+    try:
+        return analyze(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Binance public REST unavailable: %s", exc)
+        raise HTTPException(status_code=503, detail="Binance público no disponible") from exc
+
+
+@app.get("/intelligence/{symbol}/multi", summary="Contexto multitemporal de solo lectura")
+def intelligence_multi(symbol: str) -> dict[str, Any]:
+    try:
+        return analyze_multitimeframe(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Binance multitimeframe unavailable: %s", exc)
+        raise HTTPException(status_code=503, detail="Binance público no disponible") from exc

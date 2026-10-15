@@ -36,5 +36,17 @@ def test_dashboard_html_has_single_complete_script():
     assert html.count("</script>") == 1
     assert html.count("</html>") == 1
     assert html.rstrip().endswith("</html>")
-    assert "function addMessage(event)" in html
-    assert "log.prepend(line)" in html
+    assert 'ws.addEventListener("message"' in html
+    assert "feed.prepend(row)" in html
+
+
+def test_dashboard_has_distinct_asset_cards_and_collapsible_feed():
+    from pathlib import Path
+    html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
+    for symbol in ("BTCUSDT", "ETHUSDT", "WLDUSDT"):
+        assert html.count('data-symbol="' + symbol + '"') == 1
+    assert 'id="toggle"' in html
+    assert 'id="feed" hidden' in html
+    assert 'function refreshOne(symbol)' in html
+    assert html.count("<script>") == 1
+    assert html.rstrip().endswith("</html>")
