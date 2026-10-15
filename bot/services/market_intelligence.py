@@ -17,14 +17,17 @@ from bot.core.strategy import detectar_tendencia, generar_pre_senal
 ALLOWED = frozenset({"BTCUSDT", "ETHUSDT", "WLDUSDT"})
 INTERVAL = "1m"
 LIMIT = 100
+INTERVAL_MS = {"1m": 60_000, "15m": 900_000, "1h": 3_600_000, "4h": 14_400_000, "1d": 86_400_000}
 URL = "https://api.binance.com/api/v3/klines"
 
 
-def fetch_closed_candles(symbol: str, *, session: Any = requests, now_ms: int | None = None) -> list[dict]:
+def fetch_closed_candles(symbol: str, *, session: Any = requests, now_ms: int | None = None, interval: str = INTERVAL) -> list[dict]:
     symbol = symbol.upper()
+    if interval not in INTERVAL_MS:
+        raise ValueError("Temporalidad no permitida")
     if symbol not in ALLOWED:
         raise ValueError("Símbolo no permitido")
-    response = session.get(URL, params={"symbol": symbol, "interval": INTERVAL, "limit": LIMIT}, timeout=8)
+    response = session.get(URL, params={"symbol": symbol, "interval": interval, "limit": LIMIT}, timeout=8)
     response.raise_for_status()
     rows = response.json()
     if not isinstance(rows, list):
@@ -50,7 +53,7 @@ def fetch_closed_candles(symbol: str, *, session: Any = requests, now_ms: int | 
                         "low": lo, "close": price, "volume": vol})
     if len(candles) < 60:
         raise ValueError("Datos históricos insuficientes")
-    if (now // 1000) - candles[-1]["timestamp"] > 180:
+    if now - candles[-1]["timestamp"] * 1000 > INTERVAL_MS[interval] * 3:
         raise ValueError("Datos de mercado desactualizados")
     return candles
 
