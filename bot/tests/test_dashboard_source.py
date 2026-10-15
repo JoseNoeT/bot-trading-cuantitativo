@@ -29,11 +29,12 @@ def test_dashboard_template_renders():
     assert response.template.name == "index.html"
 
 
-def test_dashboard_html_has_single_complete_script():
+def test_dashboard_html_has_valid_inline_and_external_scripts():
     from pathlib import Path
     html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
     assert html.count("<script>") == 1
-    assert html.count("</script>") == 1
+    assert html.count("</script>") == 2
+    assert html.count('<script src="/static/order_review.js" defer></script>') == 1
     assert html.count("</html>") == 1
     assert html.rstrip().endswith("</html>")
     assert 'ws.addEventListener("message"' in html
