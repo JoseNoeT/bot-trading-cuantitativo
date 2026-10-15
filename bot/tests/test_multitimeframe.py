@@ -16,7 +16,8 @@ class Reply:
 
 
 class FakeSession:
-    def __init__(self, falling=False):
+    def __init__(self, now_ms, falling=False):
+        self.now_ms = now_ms
         self.calls = []
         self.falling = falling
 
@@ -26,7 +27,7 @@ class FakeSession:
         step = INTERVAL_MS[interval]
         rows = []
         for i in range(100):
-            opened = 1_000_000 + i * step
+            opened = self.now_ms - (100 - i) * step
             price = (200 - i) if self.falling else (100 + i)
             rows.append([opened, str(price - 0.3), str(price + 0.5), str(price - 0.5),
                          str(price), "200", opened + step - 1])
@@ -34,8 +35,8 @@ class FakeSession:
 
 
 def test_all_timeframes_use_closed_candles_and_no_orders():
-    session = FakeSession()
     now = 1_000_000 + 100 * INTERVAL_MS["1d"] + 1_000
+    session = FakeSession(now)
     result = analyze_multitimeframe("WLDUSDT", session=session, now_ms=now)
     assert session.calls == list(TIMEFRAMES)
     assert set(result["timeframes"]) == set(TIMEFRAMES)
@@ -45,8 +46,8 @@ def test_all_timeframes_use_closed_candles_and_no_orders():
 
 
 def test_falling_long_term_context_is_not_a_buy_signal():
-    session = FakeSession(falling=True)
     now = 1_000_000 + 100 * INTERVAL_MS["1d"] + 1_000
+    session = FakeSession(now, falling=True)
     result = analyze_multitimeframe("WLDUSDT", session=session, now_ms=now)
     assert result["context"] == "BAJISTA_DOMINANTE"
     assert result["action"] == "NO_OPERAR"
@@ -54,4 +55,4 @@ def test_falling_long_term_context_is_not_a_buy_signal():
 
 def test_invalid_timeframe_is_blocked():
     with pytest.raises(ValueError, match="Temporalidad no permitida"):
-        fetch_closed_candles("WLDUSDT", interval="3m", session=FakeSession())
+        fetch_closed_candles("WLDUSDT", interval="3m", session=FakeSession(1_000_000))
