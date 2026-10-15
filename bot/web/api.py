@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from decimal import Decimal
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from typing import Any
 import asyncio
 import random
@@ -29,6 +30,7 @@ if DATA_SOURCE not in {'simulation', 'binance'}:
     raise ValueError('BOTTRADING_DATA_SOURCE must be simulation or binance')
 
 app = FastAPI(title="Bot Trading API", version="0.1")
+app.mount("/static", StaticFiles(directory="bot/web/static"), name="static")
 
 # Templates folder
 templates = Jinja2Templates(directory="bot/web/templates")
