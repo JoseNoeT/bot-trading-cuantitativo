@@ -14,7 +14,7 @@ import requests
 from bot.core import indicators
 from bot.core.strategy import detectar_tendencia, generar_pre_senal
 
-ALLOWED = frozenset({"BTCUSDT", "ETHUSDT"})
+ALLOWED = frozenset({"BTCUSDT", "ETHUSDT", "WLDUSDT"})
 INTERVAL = "1m"
 LIMIT = 100
 URL = "https://api.binance.com/api/v3/klines"
