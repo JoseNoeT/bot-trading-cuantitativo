@@ -40,3 +40,21 @@
  .asset-price{margin:10px 0}
  .insights{margin-top:10px}
 }
+
+/* Structured manual order review: concise, readable and accessible. */
+.review-output{padding:16px!important}
+.review-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:17px;font-weight:800}
+.review-badge{padding:6px 10px;border:1px solid #7c6643;background:#3d3025;color:#ffd99d;font-size:11px;border-radius:20px;letter-spacing:.3px}
+.review-verdict{margin:12px 0;padding:12px;border-left:4px solid #f5bf68;background:#28293c;border-radius:8px}
+.review-verdict strong{color:#ffd18b;font-size:16px}
+.review-verdict p{font-size:12px;margin:6px 0 0}
+.review-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}
+.review-metric{background:#172841;border:1px solid #31435f;border-radius:10px;padding:12px}
+.review-metric small,.review-metric strong{display:block}
+.review-metric small{font-size:11px;color:#9fb5d4}
+.review-metric strong{margin-top:5px;font-size:15px;color:#f3f7ff;overflow-wrap:anywhere}
+.review-subtitle{font-size:14px;margin:14px 0 7px}
+.review-notes{margin:0;padding-left:20px;line-height:1.6;color:#f4c6b8}
+.review-notes li{margin:5px 0}
+.review-disclaimer{margin-top:14px;border-top:1px solid #39475f;padding-top:10px;color:#a9bfd6;font-size:11px}
+@media(max-width:650px){.review-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
