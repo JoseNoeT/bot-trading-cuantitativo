@@ -69,3 +69,12 @@ def test_bad_price_is_rejected():
 def test_stale_candles_are_rejected():
     with pytest.raises(ValueError, match="desactualizados"):
         fetch_closed_candles("BTCUSDT", session=Session(rows()), now_ms=100_000_000)
+
+
+def test_wldusdt_is_allowed_for_readonly_market_data():
+    class WldSession(Session):
+        def get(self, url, params, timeout):
+            assert params["symbol"] == "WLDUSDT"
+            return Response(rows())
+    data = fetch_closed_candles("WLDUSDT", session=WldSession(rows()), now_ms=5_900_000)
+    assert len(data) == 80
