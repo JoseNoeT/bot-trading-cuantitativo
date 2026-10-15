@@ -29,11 +29,12 @@ def test_dashboard_template_renders():
     assert response.template.name == "index.html"
 
 
-def test_dashboard_html_has_single_complete_script():
+def test_dashboard_html_has_valid_inline_and_external_scripts():
     from pathlib import Path
     html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
     assert html.count("<script>") == 1
-    assert html.count("</script>") == 1
+    assert html.count("</script>") == 2
+    assert html.count('<script src="/static/order_review.js" defer></script>') == 1
     assert html.count("</html>") == 1
     assert html.rstrip().endswith("</html>")
     assert 'ws.addEventListener("message"' in html
@@ -50,3 +51,18 @@ def test_dashboard_has_distinct_asset_cards_and_collapsible_feed():
     assert 'function refreshOne(symbol)' in html
     assert html.count("<script>") == 1
     assert html.rstrip().endswith("</html>")
+
+
+def test_order_review_panel_uses_separate_script_and_manual_data():
+    from pathlib import Path
+    html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
+    javascript = Path("bot/web/static/order_review.js").read_text(encoding="utf-8")
+    assert 'id="order-review-form"' in html
+    assert 'type="button" id="review-order-button"' in html
+    assert 'button.addEventListener("click", review)' in javascript
+    assert 'id="order-review-result"' in html
+    assert 'src="/static/order_review.js"' in html
+    assert 'action="/orders/review"' not in html
+    assert 'fetch("/orders/review"' in javascript
+    assert 'method: "POST"' in javascript
+    assert "no coloca ni cancela órdenes" in html

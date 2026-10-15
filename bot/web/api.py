@@ -6,8 +6,11 @@ con: python -m uvicorn bot.web.api:app --host 0.0.0.0 --port 8000
 Los endpoints son placeholders diseñados para permitir pruebas locales.
 """
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException
+from pydantic import BaseModel, Field
+from decimal import Decimal
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from typing import Any
 import asyncio
 import random
@@ -18,6 +21,8 @@ import requests
 from bot.data.websocket_stream import forward_trades
 from bot.services.market_intelligence import analyze
 from bot.services.multitimeframe import analyze_multitimeframe
+from bot.orders.models import PendingSpotOrder
+from bot.orders.evaluator import review_pending_order
 
 logger = logging.getLogger(__name__)
 DATA_SOURCE = os.getenv('BOTTRADING_DATA_SOURCE', 'simulation').strip().lower()
@@ -25,6 +30,7 @@ if DATA_SOURCE not in {'simulation', 'binance'}:
     raise ValueError('BOTTRADING_DATA_SOURCE must be simulation or binance')
 
 app = FastAPI(title="Bot Trading API", version="0.1")
+app.mount("/static", StaticFiles(directory="bot/web/static"), name="static")
 
 # Templates folder
 templates = Jinja2Templates(directory="bot/web/templates")
@@ -173,3 +179,24 @@ def intelligence_multi(symbol: str) -> dict[str, Any]:
     except requests.exceptions.RequestException as exc:
         logger.warning("Binance multitimeframe unavailable: %s", exc)
         raise HTTPException(status_code=503, detail="Binance público no disponible") from exc
+
+
+class PendingOrderReviewRequest(BaseModel):
+    symbol: str
+    side: str
+    quantity: Decimal = Field(gt=0)
+    limit_price: Decimal = Field(gt=0)
+
+
+@app.post("/orders/review", summary="Evaluar orden Spot manual sin ejecutar")
+def order_review(payload: PendingOrderReviewRequest) -> dict[str, Any]:
+    try:
+        order = PendingSpotOrder(payload.symbol.upper(), payload.side.upper(),
+                                 payload.quantity, payload.limit_price)
+        market = analyze_multitimeframe(order.symbol)
+        return review_pending_order(order, market)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Order review market data unavailable: %s", exc)
+        raise HTTPException(status_code=503, detail="Datos públicos de mercado no disponibles") from exc
