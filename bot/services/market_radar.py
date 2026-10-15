@@ -10,6 +10,8 @@ def market_radar(symbol: str, *, session=None, now_ms=None) -> dict:
     if session is not None:
         args["session"] = session
     candles = fetch_closed_candles(symbol, **args)
+    if len(candles) < 21:
+        raise ValueError("Datos insuficientes para radar de volumen")
     event = analizar_ballenas(candles)
     vols = [float(c["volume"]) for c in candles[-21:-1]]
     baseline = sum(vols) / len(vols)
