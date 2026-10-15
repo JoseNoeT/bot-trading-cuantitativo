@@ -20,5 +20,5 @@ def test_radar_is_read_only(monkeypatch):
 
 def test_radar_raises_on_invalid_market_data(monkeypatch):
     monkeypatch.setattr("bot.services.market_radar.fetch_closed_candles", lambda symbol, **kwargs: [])
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError, match="insuficientes"):
         market_radar("WLDUSDT")
