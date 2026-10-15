@@ -73,14 +73,17 @@
       for (const symbol of ["BTCUSDT", "ETHUSDT"]) {
         try {
           const response = await fetch("/intelligence/" + symbol, {cache: "no-store"});
-          if (!response.ok) throw new Error("HTTP " + response.status);
+          if (!response.ok) {
+            const failure = await response.json().catch(() => ({}));
+            throw new Error("HTTP " + response.status + ": " + String(failure.detail || "Error no identificado"));
+          }
           const info = await response.json();
           results.push(symbol + ": " + info.status + " | " + info.trend +
             " | cierre " + Number(info.last_close).toLocaleString() +
             " | RSI " + info.rsi14 + " | EMA20 " + info.ema20 +
             " | ATR " + info.atr14 + " | NO OPERAR");
         } catch (error) {
-          results.push(symbol + ": datos no disponibles | NO OPERAR");
+          results.push(symbol + ": " + String(error.message || "Sin diagnóstico") + " | NO OPERAR");
         }
       }
       document.getElementById("quant-content").textContent = results.join(" / ");
