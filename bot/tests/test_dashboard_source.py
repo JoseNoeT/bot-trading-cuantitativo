@@ -29,28 +29,20 @@ def test_dashboard_template_renders():
     assert response.template.name == "index.html"
 
 
-def test_dashboard_html_has_valid_inline_and_external_scripts():
+def test_dashboard_has_two_external_scripts_and_three_asset_cards():
     from pathlib import Path
     html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
-    assert html.count("<script>") == 1
+    js = Path("bot/web/static/command_center.js").read_text(encoding="utf-8")
+    assert html.count("<script src=") == 2
     assert html.count("</script>") == 2
-    assert html.count('<script src="/static/order_review.js" defer></script>') == 1
-    assert html.count("</html>") == 1
     assert html.rstrip().endswith("</html>")
-    assert 'ws.addEventListener("message"' in html
-    assert "feed.prepend(row)" in html
-
-
-def test_dashboard_has_distinct_asset_cards_and_collapsible_feed():
-    from pathlib import Path
-    html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
     for symbol in ("BTCUSDT", "ETHUSDT", "WLDUSDT"):
         assert html.count('data-symbol="' + symbol + '"') == 1
-    assert 'id="toggle"' in html
-    assert 'id="feed" hidden' in html
-    assert 'function refreshOne(symbol)' in html
-    assert html.count("<script>") == 1
-    assert html.rstrip().endswith("</html>")
+    for tab in ("overview", "orders", "flow"):
+        assert 'id="' + tab + '"' in html
+    assert 'id="feed"' in html
+    assert 'socket.addEventListener("message"' in js
+    assert 'function refreshAll()' in js
 
 
 def test_order_review_panel_uses_separate_script_and_manual_data():
@@ -58,11 +50,21 @@ def test_order_review_panel_uses_separate_script_and_manual_data():
     html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
     javascript = Path("bot/web/static/order_review.js").read_text(encoding="utf-8")
     assert 'id="order-review-form"' in html
-    assert 'type="button" id="review-order-button"' in html
+    assert 'id="review-order-button" type="button"' in html
     assert 'button.addEventListener("click", review)' in javascript
     assert 'id="order-review-result"' in html
     assert 'src="/static/order_review.js"' in html
     assert 'action="/orders/review"' not in html
     assert 'fetch("/orders/review"' in javascript
     assert 'method: "POST"' in javascript
-    assert "no coloca ni cancela órdenes" in html
+    assert "No coloca, modifica ni cancela órdenes" in html
+
+
+def test_fixed_viewport_dashboard_has_no_page_scroll():
+    from pathlib import Path
+    css = Path("bot/web/static/command_center.css").read_text(encoding="utf-8")
+    assert "height:100dvh" in css
+    assert "overflow:hidden" in css
+    assert "#overview.view.active" in css
+    assert "#orders.view.active" in css
+    assert "#flow.view.active" in css
