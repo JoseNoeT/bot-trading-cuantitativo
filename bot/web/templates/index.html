@@ -1,70 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bot Trading Dashboard</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BotTrading | Dashboard</title>
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; margin: 16px; background: #0f172a; color: #e6eef8; }
-    h1 { color: #7dd3fc }
-    #log { margin-top: 12px; max-width: 900px; }
-    .msg { padding: 8px; border-radius: 6px; margin-bottom: 8px; background: rgba(255,255,255,0.03); }
-    .whale { border-left: 4px solid #f472b6; }
-    .meta { font-size: 12px; color: #9aaed0 }
+    body { font-family: Arial, sans-serif; margin: 24px; background: #0f172a; color: #e6eef8; }
+    h1 { color: #7dd3fc; }
+    #log { margin-top: 16px; max-width: 920px; }
+    .msg { padding: 12px; border-radius: 8px; margin-bottom: 8px; background: #1e293b; }
+    .meta { color: #9aaed0; font-size: 12px; margin-top: 5px; }
+    .info { padding: 10px 0; }
   </style>
 </head>
 <body>
-  <h1>Bot Trading Dashboard</h1>
-  <p>Market trades (not trading signals): <code>/ws/signals</code></p><div id="source">Checking data source...</div>
-  <div id="status">Connecting...</div>
-  <div id="log"></div>
-
+  <h1>BotTrading | Panel de mercado</h1>
+  <p>Eventos de mercado: no son señales de compra o venta.</p>
+  <div id="source" class="info">Consultando fuente de datos...</div>
+  <div id="status" class="info" role="status">Conectando WebSocket...</div>
+  <div id="log" aria-live="polite"></div>
   <script>
-    const log = document.getElementById('log');
-    const status = document.getElementById('status');
-    fetch('/source').then(r=>r.json()).then(info=>{document.getElementById('source').textContent='SOURCE: '+info.data_source.toUpperCase()+' | REAL ORDERS: DISABLED';}).catch(()=>{document.getElementById('source').textContent='SOURCE: UNKNOWN';});
-    const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/signals');
+    "use strict";
+    const log = document.getElementById("log");
+    const statusNode = document.getElementById("status");
+    const sourceNode = document.getElementById("source");
 
-    function addMessage(obj){
-      const d = new Date(obj.ts*1000);
-      const el = document.createElement('div');
-      el.className = 'msg' + (obj.whale ? ' whale' : '');
-      const header = document.createElement('div');
-      header.textContent = String(obj.symbol) + ' | 
-      log.insertBefore(el, log.firstChild);
-      // keep only last 50
-      while(log.children.length>50) log.removeChild(log.lastChild);
+    fetch("/source")
+      .then(response => {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(info => {
+        sourceNode.textContent = "FUENTE: " + String(info.data_source).toUpperCase() +
+          " | ÓRDENES REALES: DESHABILITADAS";
+      })
+      .catch(() => { sourceNode.textContent = "FUENTE: NO VERIFICADA"; });
+
+    function addMessage(event) {
+      const price = Number(event.price);
+      const volume = Number(event.volume);
+      const ts = Number(event.ts);
+      if (!Number.isFinite(price) || !Number.isFinite(volume) || price <= 0 || volume <= 0) return;
+      const line = document.createElement("div");
+      line.className = "msg";
+      const heading = document.createElement("div");
+      heading.textContent = String(event.symbol || "?") + " | Precio: " +
+        price.toLocaleString() + " | Volumen: " + volume.toLocaleString();
+      const detail = document.createElement("div");
+      detail.className = "meta";
+      detail.textContent = (Number.isFinite(ts) ? new Date(ts * 1000).toLocaleString() : "Sin hora") +
+        " | " + String(event.note || event.source || "Fuente desconocida");
+      line.append(heading, detail);
+      log.prepend(line);
+      while (log.children.length > 50) log.lastChild.remove();
     }
 
-    ws.addEventListener('open', ()=>{ status.innerText = 'Connected'; });
-    ws.addEventListener('close', ()=>{ status.innerText = 'Disconnected'; });
-    ws.addEventListener('message', (ev)=>{
-      try{ const obj = JSON.parse(ev.data); addMessage(obj); } catch(e){ console.warn('invalid', e); }
-    });
-
-    // send a ping every 20s to keep connection alive
-    setInterval(()=>{ if(ws.readyState===1) ws.send('ping'); }, 20000);
-  </script>
-</body>
-</html>
- + Number(obj.price).toLocaleString() + ' @ vol ' + Number(obj.volume);
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      meta.textContent = d.toLocaleString() + ' | ' + String(obj.note || obj.source || '');
-      el.append(header, meta);
-      log.insertBefore(el, log.firstChild);
-      // keep only last 50
-      while(log.children.length>50) log.removeChild(log.lastChild);
+    function connect() {
+      const scheme = location.protocol === "https:" ? "wss://" : "ws://";
+      const ws = new WebSocket(scheme + location.host + "/ws/signals");
+      ws.addEventListener("open", () => { statusNode.textContent = "WebSocket conectado"; });
+      ws.addEventListener("close", () => { statusNode.textContent = "WebSocket desconectado; recarga para reintentar"; });
+      ws.addEventListener("error", () => { statusNode.textContent = "Error de WebSocket"; });
+      ws.addEventListener("message", message => {
+        try { addMessage(JSON.parse(message.data)); }
+        catch (error) { console.warn("Mensaje inválido", error); }
+      });
+      setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send("ping"); }, 20000);
     }
-
-    ws.addEventListener('open', ()=>{ status.innerText = 'Connected'; });
-    ws.addEventListener('close', ()=>{ status.innerText = 'Disconnected'; });
-    ws.addEventListener('message', (ev)=>{
-      try{ const obj = JSON.parse(ev.data); addMessage(obj); } catch(e){ console.warn('invalid', e); }
-    });
-
-    // send a ping every 20s to keep connection alive
-    setInterval(()=>{ if(ws.readyState===1) ws.send('ping'); }, 20000);
+    connect();
   </script>
 </body>
 </html>
