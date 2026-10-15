@@ -21,6 +21,7 @@ import requests
 from bot.data.websocket_stream import forward_trades
 from bot.services.market_intelligence import analyze
 from bot.services.multitimeframe import analyze_multitimeframe
+from bot.services.market_radar import market_radar
 from bot.orders.models import PendingSpotOrder
 from bot.orders.evaluator import review_pending_order
 
@@ -200,3 +201,14 @@ def order_review(payload: PendingOrderReviewRequest) -> dict[str, Any]:
     except requests.exceptions.RequestException as exc:
         logger.warning("Order review market data unavailable: %s", exc)
         raise HTTPException(status_code=503, detail="Datos públicos de mercado no disponibles") from exc
+
+
+@app.get("/radar/{symbol}", summary="Radar experimental de anomalías sin órdenes")
+def radar(symbol: str) -> dict[str, Any]:
+    try:
+        return market_radar(symbol.upper())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Radar public market data unavailable: %s", exc)
+        raise HTTPException(status_code=503, detail="Datos públicos no disponibles") from exc
