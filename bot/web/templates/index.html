@@ -51,7 +51,7 @@ button:hover{background:#365274}button:focus-visible{outline:2px solid #93c5fd}
 <label>Operación<select name="side"><option value="BUY">Compra</option><option value="SELL">Venta</option></select></label>
 <label>Cantidad<input name="quantity" type="number" min="0.00000001" step="any" value="17.2" required></label>
 <label>Precio límite (USDT)<input name="limit_price" type="number" min="0.00000001" step="any" value="0.4600" required></label>
-<button type="submit">Revisar orden</button>
+<button type="button" id="review-order-button">Revisar orden</button>
 </form>
 <div id="order-review-result" class="order-result" role="status" aria-live="polite">Ejemplo precargado de WLD. La orden real NO está verificada. Pulsa «Revisar orden» para consultar el mercado.</div>
 <p class="foot">Este formulario no coloca ni cancela órdenes. Los importes son manuales y no se guardan; antes de decidir verifica el estado actual en Binance.</p>
