@@ -96,7 +96,7 @@ async def start_scanner():
     global _scanner_task
     if _scanner_task is None:
         if DATA_SOURCE == "binance":
-            _scanner_task = asyncio.create_task(forward_trades(mgr, ["btcusdt", "ethusdt"]))
+            _scanner_task = asyncio.create_task(forward_trades(mgr, ["btcusdt", "ethusdt", "wldusdt"]))
         else:
             _scanner_task = asyncio.create_task(scanner_loop())
 
