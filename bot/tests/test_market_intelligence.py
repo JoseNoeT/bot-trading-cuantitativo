@@ -46,7 +46,7 @@ def test_only_closed_candles_used():
 
 
 def test_analysis_is_readonly_and_conservative():
-    result = analyze("BTCUSDT", session=Session(rows()), now_ms=6_000_000)
+    result = analyze("BTCUSDT", session=Session(rows()), now_ms=5_900_000)
     assert result["action"] == "NO_OPERAR"
     assert result["real_orders_enabled"] is False
     assert result["risk_status"] == "NOT_VERIFIED"
@@ -56,14 +56,14 @@ def test_analysis_is_readonly_and_conservative():
 
 def test_unknown_symbol_is_rejected():
     with pytest.raises(ValueError):
-        fetch_closed_candles("FAKEUSDT", session=Session(rows()), now_ms=6_000_000)
+        fetch_closed_candles("FAKEUSDT", session=Session(rows()), now_ms=5_900_000)
 
 
 def test_bad_price_is_rejected():
     data = rows()
     data[4][4] = "nan"
     with pytest.raises(ValueError):
-        fetch_closed_candles("BTCUSDT", session=Session(data), now_ms=6_000_000)
+        fetch_closed_candles("BTCUSDT", session=Session(data), now_ms=5_900_000)
 
 
 def test_stale_candles_are_rejected():
