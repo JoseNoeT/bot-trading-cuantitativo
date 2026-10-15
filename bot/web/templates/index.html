@@ -1,95 +1,104 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BotTrading | Dashboard</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; background: #0f172a; color: #e6eef8; }
-    h1 { color: #7dd3fc; }
-    #log { margin-top: 16px; max-width: 920px; }
-    .msg { padding: 12px; border-radius: 8px; margin-bottom: 8px; background: #1e293b; }
-    .meta { color: #9aaed0; font-size: 12px; margin-top: 5px; }
-    .info { padding: 10px 0; }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BotTrading | Pizarra QUANT</title>
+<style>
+:root{font-family:system-ui,Segoe UI,Arial,sans-serif;color:#e8effa;background:#0b1221;font-variant-numeric:tabular-nums}
+*{box-sizing:border-box}body{margin:0}.container{max-width:1240px;margin:auto;padding:26px 20px}
+h1{font-size:clamp(24px,3vw,34px);margin:0 0 8px}h2{font-size:18px;margin:0 0 16px}p{color:#a5b6cf;margin:0}
+header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:26px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:7px 11px;border-radius:20px;background:#1e293b;color:#cbd5e1}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card,.panel{background:#152137;border:1px solid #293850;border-radius:16px;padding:20px;min-width:0}
+.card{border-top:3px solid #4c9edc}.card.wld{border-top-color:#a78bfa}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.coin{font-weight:750;font-size:20px}
+.muted{font-size:12px;color:#9fb0cb}.price{font-size:clamp(23px,2.7vw,32px);font-weight:750;margin:14px 0 6px;overflow-wrap:anywhere}
+.status{display:inline-flex;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700;background:#344155;color:#e3edfc}
+.status.ok{background:#173d38;color:#86efac}.status.err{background:#482a36;color:#fda4af}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.metric{border-top:1px solid #344155;padding-top:10px}.value{font-size:15px;font-weight:650;margin-top:5px}
+.reason{margin-top:15px;padding:12px;border-radius:10px;background:#101a2c;color:#c4d1e5;font-size:12px;line-height:1.5;min-height:62px;overflow-wrap:anywhere}
+main{display:grid;gap:22px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+button{cursor:pointer;background:#243c59;border:1px solid #476080;border-radius:9px;color:#e8effa;padding:9px 14px}
+button:hover{background:#365274}button:focus-visible{outline:2px solid #93c5fd}
+#feed{max-height:350px;overflow:auto;display:grid;gap:6px}
+.trade{display:grid;grid-template-columns:110px 1fr 1fr 100px;gap:10px;padding:10px 12px;background:#101a2c;border-radius:8px;font-size:13px;align-items:center}
+.foot{font-size:12px;color:#a5b6cf;line-height:1.6;margin-top:14px}
+@media(max-width:960px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.grid{grid-template-columns:1fr}.trade{grid-template-columns:1fr 1fr}.container{padding:18px 12px}}
+</style>
 </head>
 <body>
-  <h1>BotTrading | Panel de mercado</h1>
-  <p>Eventos de mercado: no son señales de compra o venta.</p>
-  <div id="source" class="info">Consultando fuente de datos...</div>
-  <div id="status" class="info" role="status">Conectando WebSocket...</div>
-  <section class="msg"><strong>Análisis cuantitativo (velas cerradas 1m)</strong><div id="quant-content">Analizando...</div><small>NO OPERAR: riesgo no verificado.</small></section><div id="log" aria-live="polite"></div>
-  <script>
-    "use strict";
-    const log = document.getElementById("log");
-    const statusNode = document.getElementById("status");
-    const sourceNode = document.getElementById("source");
-
-    fetch("/source")
-      .then(response => {
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        return response.json();
-      })
-      .then(info => {
-        sourceNode.textContent = "FUENTE: " + String(info.data_source).toUpperCase() +
-          " | ÓRDENES REALES: DESHABILITADAS";
-      })
-      .catch(() => { sourceNode.textContent = "FUENTE: NO VERIFICADA"; });
-
-    function addMessage(event) {
-      const price = Number(event.price);
-      const volume = Number(event.volume);
-      const ts = Number(event.ts);
-      if (!Number.isFinite(price) || !Number.isFinite(volume) || price <= 0 || volume <= 0) return;
-      const line = document.createElement("div");
-      line.className = "msg";
-      const heading = document.createElement("div");
-      heading.textContent = String(event.symbol || "?") + " | Precio: " +
-        price.toLocaleString() + " | Volumen: " + volume.toLocaleString();
-      const detail = document.createElement("div");
-      detail.className = "meta";
-      detail.textContent = (Number.isFinite(ts) ? new Date(ts * 1000).toLocaleString() : "Sin hora") +
-        " | " + String(event.note || event.source || "Fuente desconocida");
-      line.append(heading, detail);
-      log.prepend(line);
-      while (log.children.length > 50) log.lastChild.remove();
-    }
-
-    function connect() {
-      const scheme = location.protocol === "https:" ? "wss://" : "ws://";
-      const ws = new WebSocket(scheme + location.host + "/ws/signals");
-      ws.addEventListener("open", () => { statusNode.textContent = "WebSocket conectado"; });
-      ws.addEventListener("close", () => { statusNode.textContent = "WebSocket desconectado; recarga para reintentar"; });
-      ws.addEventListener("error", () => { statusNode.textContent = "Error de WebSocket"; });
-      ws.addEventListener("message", message => {
-        try { addMessage(JSON.parse(message.data)); }
-        catch (error) { console.warn("Mensaje inválido", error); }
-      });
-      setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send("ping"); }, 20000);
-    }
-    connect();
-    async function updateIntelligence() {
-      const results = [];
-      for (const symbol of ["BTCUSDT", "ETHUSDT", "WLDUSDT"]) {
-        try {
-          const response = await fetch("/intelligence/" + symbol, {cache: "no-store"});
-          if (!response.ok) {
-            const failure = await response.json().catch(() => ({}));
-            throw new Error("HTTP " + response.status + ": " + String(failure.detail || "Error no identificado"));
-          }
-          const info = await response.json();
-          results.push(symbol + ": " + info.status + " | " + info.trend +
-            " | cierre " + Number(info.last_close).toLocaleString() +
-            " | RSI " + info.rsi14 + " | EMA20 " + info.ema20 +
-            " | ATR " + info.atr14 + " | NO OPERAR");
-        } catch (error) {
-          results.push(symbol + ": " + String(error.message || "Sin diagnóstico") + " | NO OPERAR");
-        }
-      }
-      document.getElementById("quant-content").textContent = results.join(" / ");
-    }
-    updateIntelligence();
-    setInterval(updateIntelligence, 60000);
-  </script>
-</body>
-</html>
+<div class="container">
+<header>
+<div><h1>BotTrading <span style="color:#7dd3fc">QUANT</span></h1><p>Pizarra de mercado · análisis informativo, sin operaciones</p></div>
+<div><span id="source" class="tag">Fuente: verificando...</span> <span id="socket" class="tag">WebSocket: conectando...</span> <span class="tag">Órdenes: deshabilitadas</span></div>
+</header>
+<main>
+<section>
+<div class="section-head"><h2>Activos bajo seguimiento</h2><button id="refresh" type="button">Actualizar análisis</button></div>
+<div id="cards" class="grid">
+<article class="card" data-symbol="BTCUSDT"><div class="top"><div class="coin">Bitcoin <div class="muted">BTC / USDT</div></div><span class="status" data-field="status">Cargando</span></div><div class="price" data-field="price">—</div><div class="muted" data-field="source">Esperando datos verificados</div><div class="metrics"><div class="metric"><div class="muted">Tendencia</div><div class="value" data-field="trend">—</div></div><div class="metric"><div class="muted">RSI (14)</div><div class="value" data-field="rsi">—</div></div><div class="metric"><div class="muted">EMA20 / EMA50</div><div class="value" data-field="ema">—</div></div><div class="metric"><div class="muted">ATR (14)</div><div class="value" data-field="atr">—</div></div></div><div class="reason" data-field="reason">Análisis pendiente. NO OPERAR.</div></article>
+<article class="card" data-symbol="ETHUSDT"><div class="top"><div class="coin">Ethereum <div class="muted">ETH / USDT</div></div><span class="status" data-field="status">Cargando</span></div><div class="price" data-field="price">—</div><div class="muted" data-field="source">Esperando datos verificados</div><div class="metrics"><div class="metric"><div class="muted">Tendencia</div><div class="value" data-field="trend">—</div></div><div class="metric"><div class="muted">RSI (14)</div><div class="value" data-field="rsi">—</div></div><div class="metric"><div class="muted">EMA20 / EMA50</div><div class="value" data-field="ema">—</div></div><div class="metric"><div class="muted">ATR (14)</div><div class="value" data-field="atr">—</div></div></div><div class="reason" data-field="reason">Análisis pendiente. NO OPERAR.</div></article>
+<article class="card wld" data-symbol="WLDUSDT"><div class="top"><div class="coin">Worldcoin <div class="muted">WLD / USDT · Prioritario</div></div><span class="status" data-field="status">Cargando</span></div><div class="price" data-field="price">—</div><div class="muted" data-field="source">Esperando datos verificados</div><div class="metrics"><div class="metric"><div class="muted">Tendencia</div><div class="value" data-field="trend">—</div></div><div class="metric"><div class="muted">RSI (14)</div><div class="value" data-field="rsi">—</div></div><div class="metric"><div class="muted">EMA20 / EMA50</div><div class="value" data-field="ema">—</div></div><div class="metric"><div class="muted">ATR (14)</div><div class="value" data-field="atr">—</div></div></div><div class="reason" data-field="reason">Análisis pendiente. NO OPERAR.</div></article>
+</div>
+<p class="foot">Los indicadores se calculan con velas cerradas de 1 minuto. WAIT o SETUP_DETECTED no son autorizaciones. Sin riesgo validado: NO OPERAR. Los precios de transacciones pueden diferir del último cierre analizado.</p>
+</section>
+<section class="panel">
+<div class="section-head"><div><h2>Transacciones de mercado</h2><p>Últimos 30 eventos públicos. No son señales.</p></div><button id="toggle" type="button" aria-expanded="false">Mostrar transacciones</button></div>
+<div id="feed" hidden></div>
+<div id="feed-info" class="foot">Los eventos siguen actualizándose aunque esta sección esté contraída.</div>
+</section>
+</main>
+</div>
+<script>
+"use strict";
+const symbols=["BTCUSDT","ETHUSDT","WLDUSDT"];
+const cards=Object.fromEntries(symbols.map(s=>[s,document.querySelector('[data-symbol="'+s+'"]')]));
+const fmt=(value,digits=2)=>Number.isFinite(Number(value))?Number(value).toLocaleString("es-CL",{maximumFractionDigits:digits}):"—";
+function field(symbol,name,value){cards[symbol].querySelector('[data-field="'+name+'"]').textContent=String(value);}
+async function refreshOne(symbol){
+  field(symbol,"status","Consultando");
+  try{
+    const response=await fetch("/intelligence/"+symbol,{cache:"no-store"});
+    const payload=await response.json();
+    if(!response.ok)throw Error("HTTP "+response.status+": "+String(payload.detail||"sin detalle"));
+    field(symbol,"status",payload.status==="SETUP_DETECTED"?"Pre-señal":"En espera");
+    field(symbol,"price",fmt(payload.last_close,6)+" USDT");
+    field(symbol,"source","Binance REST · cierre 1m · "+new Date(Number(payload.last_close_time)*1000).toLocaleTimeString("es-CL"));
+    field(symbol,"trend",payload.trend||"—");
+    field(symbol,"rsi",fmt(payload.rsi14,2));
+    field(symbol,"ema",fmt(payload.ema20,4)+" / "+fmt(payload.ema50,4));
+    field(symbol,"atr",fmt(payload.atr14,6));
+    field(symbol,"reason",(Array.isArray(payload.reason)?payload.reason.join("; "):"Sin razones")+" · Riesgo no verificado. NO OPERAR.");
+  }catch(err){
+    field(symbol,"status","Sin datos");
+    field(symbol,"source","Error al consultar indicadores");
+    field(symbol,"reason",String(err.message||err)+" · NO OPERAR.");
+    for(const k of ["trend","rsi","ema","atr"])field(symbol,k,"—");
+  }
+}
+function refreshAll(){symbols.forEach(refreshOne);}
+document.getElementById("refresh").addEventListener("click",refreshAll);
+refreshAll();setInterval(refreshAll,60000);
+fetch("/source").then(r=>r.json()).then(info=>{document.getElementById("source").textContent="Fuente WebSocket: "+String(info.data_source).toUpperCase();}).catch(()=>{document.getElementById("source").textContent="Fuente no verificada";});
+const feed=document.getElementById("feed");
+document.getElementById("toggle").addEventListener("click",()=>{feed.hidden=!feed.hidden;const open=!feed.hidden;document.getElementById("toggle").textContent=open?"Ocultar transacciones":"Mostrar transacciones";document.getElementById("toggle").setAttribute("aria-expanded",String(open));});
+function connect(){
+ const ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws/signals");
+ ws.addEventListener("open",()=>{document.getElementById("socket").textContent="WebSocket conectado";});
+ ws.addEventListener("close",()=>{document.getElementById("socket").textContent="WebSocket desconectado";});
+ ws.addEventListener("message",e=>{
+  try{
+   const m=JSON.parse(e.data),symbol=String(m.symbol||"");
+   if(!symbols.includes(symbol)||!Number.isFinite(Number(m.price))||Number(m.price)<=0)return;
+   const row=document.createElement("div");row.className="trade";
+   for(const value of [symbol,fmt(m.price,6)+" USDT",fmt(m.volume,8)+" unidades",new Date(Number(m.ts)*1000).toLocaleTimeString("es-CL")]){const cell=document.createElement("span");cell.textContent=value;row.appendChild(cell);}
+   feed.prepend(row);while(feed.children.length>30)feed.lastChild.remove();
+  }catch(error){console.warn("Evento inválido",error);}
+ });
+ setInterval(()=>{if(ws.readyState===WebSocket.OPEN)ws.send("ping");},20000);
+}
+connect();
+</script>
+</body></html>
