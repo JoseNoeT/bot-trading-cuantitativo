@@ -58,6 +58,8 @@ def test_order_review_panel_uses_separate_script_and_manual_data():
     html = Path("bot/web/templates/index.html").read_text(encoding="utf-8")
     javascript = Path("bot/web/static/order_review.js").read_text(encoding="utf-8")
     assert 'id="order-review-form"' in html
+    assert 'type="button" id="review-order-button"' in html
+    assert 'button.addEventListener("click", review)' in javascript
     assert 'id="order-review-result"' in html
     assert 'src="/static/order_review.js"' in html
     assert 'action="/orders/review"' not in html
